@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grand Luxury Tree Mobile (Photo Gallery)</title>
+    <title>Grand Luxury Tree Mobile (Music Edition)</title>
     <style>
         /* 修改: 禁用默认触摸动作，防止页面滚动 */
         body { 
@@ -140,6 +140,10 @@
     </script>
 </head>
 <body>
+
+    <audio id="bgm" loop hidden>
+        <source src="https://webaudioapi.com/samples/audio-tag/chrono.mp3" type="audio/mp3">
+    </audio>
 
     <div id="loader">
         <div class="spinner"></div>
@@ -813,6 +817,17 @@
         }
 
         init();
+    </script>
+    
+    <script>
+        // 监听屏幕被点击或触摸的瞬间
+        window.addEventListener('pointerdown', function() {
+            const audio = document.getElementById('bgm');
+            // 如果音乐没在播放，就让它播放
+            if (audio.paused) {
+                audio.play().catch(e => console.log("等待交互才能播放"));
+            }
+        }, { once: true }); // { once: true } 表示这个监听只运行一次，省电
     </script>
 </body>
 </html>
