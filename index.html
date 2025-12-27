@@ -176,27 +176,22 @@
         import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'; 
         import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 
-        // ==========================================================
-        // 【重要】在这里填写你的照片链接
-        // 朋友打开链接时，会直接显示这些照片
-        // ==========================================================
         const MY_PHOTOS = [
-            "https://postimg.cc/z3S0b37H", 
-            "https://postimg.cc/0bkZpxXD", 
-            "https://postimg.cc/F7rGjmCT", 
-            "https://postimg.cc/QH8SpsY4", 
-            "https://postimg.cc/N5dDDVZz", 
-            "https://postimg.cc/c6MXg6hH", 
-            "https://postimg.cc/qgXjhgwq", 
-            "https://postimg.cc/DmdBJm6m", 
-            "https://postimg.cc/qzJQ80DJ", 
-            "https://postimg.cc/QH8SpsYx", 
-            "https://postimg.cc/svjKpyHB", 
-            "https://postimg.cc/9rm1GVg7", 
-            "https://postimg.cc/vDJbBq0K", 
+            "https://i.postimg.cc/RC28YHnd/1.jpg", 
+            "https://i.postimg.cc/L6f7F8zC/10.jpg", 
+            "https://i.postimg.cc/NfTVvj6v/11.jpg", 
+            "https://i.postimg.cc/02m31yYs/12.jpg", 
+            "https://i.postimg.cc/GmCfLnKd/13.jpg", 
+            "https://i.postimg.cc/66FSPvGd/2.jpg", 
+            "https://i.postimg.cc/44jM09h6/3.jpg", 
+            "https://i.postimg.cc/66FSPvGV/4.jpg", 
+            "https://i.postimg.cc/pX87MLDF/5.jpg", 
+            "https://i.postimg.cc/nc75fhv1/8.jpg", 
+            "https://i.postimg.cc/sDS8CgpS/7.jpg", 
+            "https://i.postimg.cc/sDS8Cgpw/9.jpg", 
+            "https://i.postimg.cc/15ttvbwy/14.jpg"
         ];
 
-        // --- CONFIGURATION ---
         const CONFIG = {
             colors: {
                 bg: 0x000000, 
