@@ -2,9 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 修改: 禁止缩放，适应移动端全屏体验 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grand Luxury Tree Mobile (Gesture Select)</title>
+    <title>Grand Luxury Tree Mobile (Photo Gallery)</title>
     <style>
         /* 修改: 禁用默认触摸动作，防止页面滚动 */
         body { 
@@ -152,22 +151,18 @@
     <div id="ui-layer">
         <h1>Merry Christmas</h1>
         
-        <!-- Hand Cursor Element -->
         <div id="hand-cursor"></div>
 
         <div class="upload-wrapper">
             <label class="upload-btn">
-                Add Memories
+                Add More Memories
                 <input type="file" id="file-input" multiple accept="image/*">
             </label>
-            <!-- 修改文案: Click -> Tap -->
             <div class="hint-text">Tap or Pinch photos to select • Press 'H' to Hide Controls</div>
         </div>
     </div>
 
-    <!-- Webcam hidden structure -->
     <div id="webcam-wrapper">
-        <!-- 修改: 增加 playsinline 确保iOS不全屏播放 -->
         <video id="webcam" autoplay playsinline style="display:none;"></video>
         <canvas id="webcam-preview"></canvas>
     </div>
@@ -181,16 +176,36 @@
         import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'; 
         import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 
+        // ==========================================================
+        // 【重要】在这里填写你的照片链接
+        // 朋友打开链接时，会直接显示这些照片
+        // ==========================================================
+        const MY_PHOTOS = [
+            "https://postimg.cc/z3S0b37H", 
+            "https://postimg.cc/0bkZpxXD", 
+            "https://postimg.cc/F7rGjmCT", 
+            "https://postimg.cc/QH8SpsY4", 
+            "https://postimg.cc/N5dDDVZz", 
+            "https://postimg.cc/c6MXg6hH", 
+            "https://postimg.cc/qgXjhgwq", 
+            "https://postimg.cc/DmdBJm6m", 
+            "https://postimg.cc/qzJQ80DJ", 
+            "https://postimg.cc/QH8SpsYx", 
+            "https://postimg.cc/svjKpyHB", 
+            "https://postimg.cc/9rm1GVg7", 
+            "https://postimg.cc/vDJbBq0K", 
+        ];
+
         // --- CONFIGURATION ---
         const CONFIG = {
             colors: {
                 bg: 0x000000, 
                 champagneGold: 0xffd966, 
-                deepGreen: 0x03180a,     
-                accentRed: 0x990000,     
+                deepGreen: 0x03180a,      
+                accentRed: 0x990000,      
             },
             particles: {
-                count: 1500,     
+                count: 1500,      
                 dustCount: 2500, 
                 treeHeight: 24,  
                 treeRadius: 8    
@@ -226,8 +241,11 @@
             setupLights();
             createTextures();
             createParticles(); 
-            createDust();     
+            createDust();      
+            
+            // 使用新版照片加载函数
             createDefaultPhotos();
+            
             setupPostProcessing();
             setupEvents();
             await initMediaPipe();
@@ -494,29 +512,72 @@
             }
         }
 
+        // ==============================================
+        // 修改版: 照片加载核心逻辑 (自适应比例 + 预设列表)
+        // ==============================================
+        
         function createDefaultPhotos() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512; canvas.height = 512;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#050505'; ctx.fillRect(0,0,512,512);
-            ctx.strokeStyle = '#eebb66'; ctx.lineWidth = 15; ctx.strokeRect(20,20,472,472);
-            ctx.font = '500 60px Times New Roman'; ctx.fillStyle = '#eebb66';
-            ctx.textAlign = 'center'; 
-            ctx.fillText("JOYEUX", 256, 230);
-            ctx.fillText("NOEL", 256, 300);
-            
-            const tex = new THREE.CanvasTexture(canvas);
-            tex.colorSpace = THREE.SRGBColorSpace;
-            addPhotoToScene(tex);
+            // 1. 如果你定义了照片链接，就加载它们
+            if (typeof MY_PHOTOS !== 'undefined' && MY_PHOTOS.length > 0) {
+                const loader = new THREE.TextureLoader();
+                // 允许跨域加载(防止某些图片不显示)
+                loader.setCrossOrigin('anonymous');
+                
+                MY_PHOTOS.forEach(url => {
+                    loader.load(url, (texture) => {
+                        texture.colorSpace = THREE.SRGBColorSpace;
+                        addPhotoToScene(texture);
+                    }, undefined, (err) => {
+                        console.error('照片加载失败，请检查链接:', url);
+                    });
+                });
+            } 
+            // 2. 如果没有填照片，还是显示原本的文字牌
+            else {
+                const canvas = document.createElement('canvas');
+                canvas.width = 512; canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#050505'; ctx.fillRect(0,0,512,512);
+                ctx.strokeStyle = '#eebb66'; ctx.lineWidth = 15; ctx.strokeRect(20,20,472,472);
+                ctx.font = '500 60px Times New Roman'; ctx.fillStyle = '#eebb66';
+                ctx.textAlign = 'center'; 
+                ctx.fillText("JOYEUX", 256, 230);
+                ctx.fillText("NOEL", 256, 300);
+                
+                const tex = new THREE.CanvasTexture(canvas);
+                tex.colorSpace = THREE.SRGBColorSpace;
+                addPhotoToScene(tex);
+            }
         }
 
         function addPhotoToScene(texture) {
-            const frameGeo = new THREE.BoxGeometry(1.4, 1.4, 0.05);
+            // 核心修改: 自动计算比例，不再强制正方形
+            const img = texture.image;
+            let width = img.width;
+            let height = img.height;
+            const aspect = width / height;
+            
+            const MAX_SIZE = 1.4; // 照片最大边长
+            
+            let finalWidth, finalHeight;
+            if (width > height) {
+                // 横图
+                finalWidth = MAX_SIZE;
+                finalHeight = MAX_SIZE / aspect;
+            } else {
+                // 竖图
+                finalHeight = MAX_SIZE;
+                finalWidth = MAX_SIZE * aspect;
+            }
+
+            // 相框比照片略大
+            const frameGeo = new THREE.BoxGeometry(finalWidth + 0.1, finalHeight + 0.1, 0.05);
             const frameMat = new THREE.MeshStandardMaterial({ color: CONFIG.colors.champagneGold, metalness: 1.0, roughness: 0.1 });
             const frame = new THREE.Mesh(frameGeo, frameMat);
 
-            const photoGeo = new THREE.PlaneGeometry(1.2, 1.2);
-            const photoMat = new THREE.MeshBasicMaterial({ map: texture });
+            const photoGeo = new THREE.PlaneGeometry(finalWidth, finalHeight);
+            // 双面显示
+            const photoMat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
             const photo = new THREE.Mesh(photoGeo, photoMat);
             photo.position.z = 0.04;
 
@@ -540,6 +601,7 @@
                 reader.onload = (ev) => {
                     new THREE.TextureLoader().load(ev.target.result, (t) => {
                         t.colorSpace = THREE.SRGBColorSpace;
+                        // 上传的图片也使用新的自适应比例函数
                         addPhotoToScene(t);
                     });
                 }
