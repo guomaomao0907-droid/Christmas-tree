@@ -157,13 +157,6 @@
         
         <div id="hand-cursor"></div>
 
-        <div class="upload-wrapper">
-            <label class="upload-btn">
-                Add More Memories
-                <input type="file" id="file-input" multiple accept="image/*">
-            </label>
-            <div class="hint-text">Tap or Pinch photos to select • Press 'H' to Hide Controls</div>
-        </div>
     </div>
 
     <div id="webcam-wrapper">
@@ -778,8 +771,7 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 composer.setSize(window.innerWidth, window.innerHeight);
             });
-            
-            document.getElementById('file-input').addEventListener('change', handleImageUpload);
+        
             
             window.addEventListener('pointerdown', onPointerDown);
 
